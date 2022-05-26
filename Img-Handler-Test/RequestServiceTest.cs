@@ -1,15 +1,17 @@
-using Img_Handler;
-using Img_Handler.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Img_Handler.Service;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Img_Handler_Test
 {
     [TestClass]
-    public class ImageInfoHandlerTest
+    public class RequestServiceTest
     {
         [TestInitialize()]
         public void Initialize()
@@ -38,39 +40,22 @@ namespace Img_Handler_Test
         }
 
         [TestMethod]
-        public async Task Test1_ShouldThrowsNullReferenceException()
+        public async Task ShouldReturnString()
         {
-            //Arrange
-            Environment.SetEnvironmentVariable("apiKey", String.Empty);
-            var request = new HttpRequestMessage();
             var logger = Mock.Of<ILogger>();
+            var sut = new RequestService(logger);
+            var result = await sut.CallApiAsync($"https://api.unsplash.com/photos/random");
 
-            //Act && Assert
-            await Assert.ThrowsExceptionAsync<NullReferenceException>(async () => await ImageInfoHandler.Run(request, logger));
+            Assert.IsInstanceOfType(result, typeof(string));
         }
 
         [TestMethod]
-        public async Task Test2_ShouldReturnImagePropertyType()
+        public async Task ShouldThrowArgumentNullException()
         {
-            //Arrange
-            var request = new HttpRequestMessage();
             var logger = Mock.Of<ILogger>();
+            var sut = new RequestService(logger);
 
-            //Act
-            var response = await ImageInfoHandler.Run(request, logger);
-            var okResult = response as OkObjectResult;
-            var result = JsonConvert.DeserializeObject<ImageProperties>(okResult?.Value.ToString());
-
-            //Assert
-            Assert.IsInstanceOfType(result, typeof(ImageProperties));
+            await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await sut.CallApiAsync(string.Empty));
         }
     }
-
-    class LocalSettings
-    {
-        public bool IsEncrypted { get; set; }
-        public Dictionary<string, string> Values { get; set; }
-    }
-
-    
 }

@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using Img_Handler.Models;
 using Microsoft.Azure.Cosmos.Table;
+using Img_Handler.Service;
 
 namespace Img_Handler
 {
@@ -28,34 +29,22 @@ namespace Img_Handler
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-
+            RequestService requestService = new RequestService(log);
             var responseMessage = string.Empty;
             ImageProperties imgProps = new();
 
-            try
-            {
-                //images request
-                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Client-ID {apikey}");
-                var response = await client.GetAsync($"{urlBase}{randomPhoto}", HttpCompletionOption.ResponseHeadersRead);
-                response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadAsStringAsync();
-                imgProps = JsonConvert.DeserializeObject<ImageProperties>(result);
+            //images request
+            var result = await requestService.CallApiAsync($"{urlBase}{randomPhoto}");
+            imgProps = JsonConvert.DeserializeObject<ImageProperties>(result);
 
-                //Statistics request
-                var response2 = await client.GetAsync($"{urlBase}{imgProps.Id}/statistics?quantity={num_days}", HttpCompletionOption.ResponseHeadersRead);
-                response.EnsureSuccessStatusCode();
-                var result2 = await response2.Content.ReadAsStringAsync();
-                var definition = new { downloads = new { total = 0, historical = new { change = 0 } } };
-                var test2 = JsonConvert.DeserializeAnonymousType(result2, definition);
-                imgProps.Stats.QuantityDownloads = test2.downloads.total;
-                imgProps.Stats.PercentageDownloads = ((double)test2.downloads.historical.change / test2.downloads.total) * 100;
-                responseMessage = JsonConvert.SerializeObject(imgProps);
-            }
-            catch (Exception ex)
-            {
-                log.LogInformation($"Error at {ex}");
-                throw ex;
-            }
+            //Statistics request
+            var result2 = await requestService.CallApiAsync($"{urlBase}{imgProps.Id}/statistics?quantity={num_days}");
+            var definition = new { downloads = new { total = 0, historical = new { change = 0 } } };
+            var test2 = JsonConvert.DeserializeAnonymousType(result2, definition);
+            imgProps.Stats.QuantityDownloads = test2.downloads.total;
+            imgProps.Stats.PercentageDownloads = ((double)test2.downloads.historical.change / test2.downloads.total) * 100;
+            responseMessage = JsonConvert.SerializeObject(imgProps);
+
 
             CloudStorageAccount storageAccount;
             if (string.IsNullOrEmpty(storageConnString))
@@ -86,7 +75,7 @@ namespace Img_Handler
 
             TableResult result = await table.ExecuteAsync(insertOrReplaceOperation);
             ImageInfoEntity insertedImageInfo = result.Result as ImageInfoEntity;
-            
+
             Console.WriteLine("Inserted register");
         }
     }
