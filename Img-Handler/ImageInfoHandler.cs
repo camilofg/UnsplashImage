@@ -54,9 +54,13 @@ namespace Img_Handler
             catch (Exception ex)
             {
                 log.LogInformation($"Error at {ex}");
+                throw ex;
             }
 
             CloudStorageAccount storageAccount;
+            if (string.IsNullOrEmpty(storageConnString))
+                throw new ArgumentNullException("The storage configuration is empty");
+
             storageAccount = CloudStorageAccount.Parse(storageConnString);
 
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());

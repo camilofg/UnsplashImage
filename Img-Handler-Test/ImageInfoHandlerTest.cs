@@ -12,13 +12,12 @@ namespace Img_Handler_Test
     public class ImageInfoHandlerTest
     {
         [TestMethod]
-        public async Task ShouldReturnImagePropertyType()
+        public async Task Test1_ShouldReturnImagePropertyType()
         {
             //Arrange
             SetupEnvironment();
             var request = new HttpRequestMessage();
             var logger = Mock.Of<ILogger>();
-
 
             //Act
             var response = await ImageInfoHandler.Run(request, logger);
@@ -27,6 +26,19 @@ namespace Img_Handler_Test
 
             //Assert
             Assert.IsInstanceOfType(result, typeof(ImageProperties));
+            CleanUpEnvironment();
+        }
+
+        [TestMethod]
+        public async Task Test2_ShouldThrowsUnathorizedException()
+        {
+            //Arrange
+            Environment.SetEnvironmentVariable("apiKey", null);
+            var request = new HttpRequestMessage();
+            var logger = Mock.Of<ILogger>();
+
+            //Act && Assert
+            await Assert.ThrowsExceptionAsync<HttpRequestException>(async () => await ImageInfoHandler.Run(request, logger));
         }
 
         public static void SetupEnvironment()
@@ -38,6 +50,18 @@ namespace Img_Handler_Test
             foreach (var setting in settings.Values)
             {
                 Environment.SetEnvironmentVariable(setting.Key, setting.Value);
+            }
+        }
+
+        public static void CleanUpEnvironment()
+        {
+            string basePath = Path.GetFullPath(@"..\..\..\..\Img-Handler");
+            var settings = JsonConvert.DeserializeObject<LocalSettings>(
+                File.ReadAllText(basePath + "\\local.settings.json"));
+
+            foreach (var setting in settings.Values)
+            {
+                Environment.SetEnvironmentVariable(setting.Key, null);
             }
         }
     }
