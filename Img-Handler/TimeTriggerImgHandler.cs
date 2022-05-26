@@ -9,10 +9,11 @@ namespace Img_Handler
 {
     public class TimeTriggerImgHandler
     {
-        private static string urlFunction = $"https://image-info.azurewebsites.net/api/ImageInfoHandler?code={System.Environment.GetEnvironmentVariable("func-code")}";
+        private static string urlFunction =  $"{System.Environment.GetEnvironmentVariable("httpFunctionPrefix")}{System.Environment.GetEnvironmentVariable("func-code")}";
+        private static string cron_schedule = System.Environment.GetEnvironmentVariable("cron_schedule");
 
         [FunctionName("TimeTriggerImgHandler")]
-        public async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%cron_schedule%")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 

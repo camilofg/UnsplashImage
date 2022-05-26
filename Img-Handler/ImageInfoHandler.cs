@@ -16,12 +16,12 @@ namespace Img_Handler
     public static class ImageInfoHandler
     {
         private static HttpClient client = new HttpClient();
-        private static string urlBase = "https://api.unsplash.com/photos/";
+        private static string urlBase = System.Environment.GetEnvironmentVariable("urlBase");
         private static string randomPhoto = "random/";
         private static string apikey = System.Environment.GetEnvironmentVariable("apiKey");
-        private static string num_days = "10";
+        private static string num_days = System.Environment.GetEnvironmentVariable("num_days");
         private static string storageConnString = System.Environment.GetEnvironmentVariable("storageConnectionString");
-        private static string tableName = "imageinfo";
+        private static string tableName = System.Environment.GetEnvironmentVariable("table_name");
 
         [FunctionName("ImageInfoHandler")]
         public static async Task<IActionResult> Run(

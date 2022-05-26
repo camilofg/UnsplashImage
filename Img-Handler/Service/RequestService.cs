@@ -18,20 +18,18 @@ namespace Img_Handler.Service
         private readonly HttpClient client;
         private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
         private static string apikey = System.Environment.GetEnvironmentVariable("apiKey");
-        private static string num_days = "10";
         private static string storageConnString = System.Environment.GetEnvironmentVariable("storageConnectionString");
-        private static string tableName = "imageinfo";
 
         public RequestService(ILogger logger)
         {
             _logger = logger;
             client = new HttpClient();
             HttpStatusCode[] httpStatusCodesWorthRetrying = {
-               HttpStatusCode.RequestTimeout, // 408
-               HttpStatusCode.InternalServerError, // 500
-               HttpStatusCode.BadGateway, // 502
-               HttpStatusCode.ServiceUnavailable, // 503
-               HttpStatusCode.GatewayTimeout // 504
+               HttpStatusCode.RequestTimeout, 
+               HttpStatusCode.InternalServerError, 
+               HttpStatusCode.BadGateway,
+               HttpStatusCode.ServiceUnavailable, 
+               HttpStatusCode.GatewayTimeout 
             };
             _retryPolicy = Policy
                 .Handle<HttpRequestException>()
