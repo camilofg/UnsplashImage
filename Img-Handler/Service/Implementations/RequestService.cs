@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Img_Handler.Models;
 using Img_Handler.Service.Contracts;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -18,8 +19,7 @@ namespace Img_Handler.Service.Implementations
         private readonly ILogger _logger;
         private readonly HttpClient _client;
         private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
-        private static string ApiKey = Environment.GetEnvironmentVariable("ApiKey");
-        private static string storageConnString = Environment.GetEnvironmentVariable("StorageConnectionString");
+        private static string ApiKey = EnvOptions.ApiKey; 
 
         public RequestService(ILoggerFactory logger, IHttpClientFactory httpClientFactory)
         {

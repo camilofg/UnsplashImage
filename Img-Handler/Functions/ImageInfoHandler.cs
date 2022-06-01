@@ -19,14 +19,11 @@ namespace Img_Handler.Functions
     {
         private readonly IRequestService _requestService;
         private readonly ITableStorageHandler _tableStorageHandler;
-        private readonly EnvOptions _settings;
 
         private static string randomPhoto = "random/";
-        private static string storageConnString = Environment.GetEnvironmentVariable("StorageConnectionString");
 
-        public ImageInfoHandler(IOptions<EnvOptions> settings, IRequestService requestService, ITableStorageHandler tableStorageHandler)
+        public ImageInfoHandler(IRequestService requestService, ITableStorageHandler tableStorageHandler)
         {
-            _settings = settings.Value;
             _requestService = requestService;
             _tableStorageHandler = tableStorageHandler;
         }
@@ -39,14 +36,14 @@ namespace Img_Handler.Functions
             log.LogInformation("C# HTTP trigger function processed a request.");
             var responseMessage = string.Empty;
             ImageProperties imgProps = new();
-            Console.WriteLine($"the table name is: {_settings.Table_Name}");
+            Console.WriteLine($"the table name is: {EnvOptions.Table_Name}");
             
             //images request
-            var result = await _requestService.CallApiAsync($"{_settings.UrlBase}{randomPhoto}");
+            var result = await _requestService.CallApiAsync($"{EnvOptions.UrlBase}{randomPhoto}");
             imgProps = JsonConvert.DeserializeObject<ImageProperties>(result);
 
             //Statistics request
-            var result2 = await _requestService.CallApiAsync($"{_settings.UrlBase}{imgProps.Id}/statistics?quantity={_settings.Num_Days}");
+            var result2 = await _requestService.CallApiAsync($"{EnvOptions.UrlBase}{imgProps.Id}/statistics?quantity={EnvOptions.Num_Days}");
             var definition = new { downloads = new { total = 0, historical = new { change = 0 } } };
             var test2 = JsonConvert.DeserializeAnonymousType(result2, definition);
             imgProps.Stats.QuantityDownloads = test2.downloads.total;

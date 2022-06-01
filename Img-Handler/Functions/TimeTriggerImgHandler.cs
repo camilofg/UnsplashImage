@@ -13,20 +13,18 @@ namespace Img_Handler.Functions
     public class TimeTriggerImgHandler
     {
         private static string urlFunction;
-        private static string Cron_Schedule;
-        private readonly EnvOptions _settings;
+        private static string cron_schedule;
         private readonly IRequestService _requestService;
 
-        public TimeTriggerImgHandler(IOptions<EnvOptions> settings, IRequestService requestService)
+        public TimeTriggerImgHandler(IRequestService requestService)
         {
-            _settings = settings.Value;
-            urlFunction = $"{_settings.HttpFunctionPrefix}{Environment.GetEnvironmentVariable("Func_Code")}";
-            Cron_Schedule = _settings.Cron_Schedule;
+            urlFunction = $"{EnvOptions.HttpFunctionPrefix}{EnvOptions.Func_Code}";
+            cron_schedule = EnvOptions.Cron_Schedule;
             _requestService = requestService;
         }
 
         [FunctionName("TimeTriggerImgHandler")]
-        public async Task Run([TimerTrigger("0 4 * * *")] TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%cron_schedule%")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 

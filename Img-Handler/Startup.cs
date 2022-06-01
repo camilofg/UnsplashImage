@@ -21,14 +21,6 @@ namespace Img_Handler
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            IConfiguration localConfig = new ConfigurationBuilder()
-                .SetBasePath(Environment.CurrentDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-            builder.Services
-            .Configure<EnvOptions>(localConfig.GetSection("EnvOptions"));
-
             builder.Services.AddHttpClient();
             builder.Services.AddSingleton<IRequestService, RequestService>();
             builder.Services.AddScoped<ITableStorageHandler, TableStorageHandler>();

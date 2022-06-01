@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Img_Handler.Models
 {
-    public class EnvOptions
+    public static class EnvOptions
     {
-        //public string ApiKey { get; set; }
-        //public string StorageConnectionString { get; set; }
-        //public string Func_Code { get; set; }
-        public string UrlBase { get; set; }
-        public string Num_Days { get; set; }
-        public string Table_Name { get; set; }
-        public string HttpFunctionPrefix { get; set; }
-        public string Cron_Schedule { get; set; }
+        public static string ApiKey => Environment.GetEnvironmentVariable("ApiKey");
+        public static string StorageConnectionString => Environment.GetEnvironmentVariable("StorageConnectionString");
+        public static string Func_Code => Environment.GetEnvironmentVariable("Func_Code");
+        public static string UrlBase => Environment.GetEnvironmentVariable("UrlBase");
+        public static string Num_Days => Environment.GetEnvironmentVariable("Num_Days");
+        public static string Table_Name => Environment.GetEnvironmentVariable("Table_Name");
+        public static string HttpFunctionPrefix => Environment.GetEnvironmentVariable("HttpFunctionPrefix");
+        public static string Cron_Schedule => Environment.GetEnvironmentVariable("Cron_Schedule");
     }
 }

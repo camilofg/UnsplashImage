@@ -13,17 +13,16 @@ namespace Img_Handler.Service.Implementations
     public class TableStorageHandler : ITableStorageHandler
     {
 
-        private static string storageConnString = System.Environment.GetEnvironmentVariable("StorageConnectionString");
+        private static string storageConnString = EnvOptions.StorageConnectionString;
         private readonly CloudStorageAccount _storageAccount;
         private readonly CloudTableClient _tableClient;
         private readonly CloudTable _table;
-        private readonly EnvOptions _settings;
-        public TableStorageHandler(IOptions<EnvOptions> settings)
+
+        public TableStorageHandler()
         {
-            _settings = settings.Value;
             _storageAccount = CloudStorageAccount.Parse(storageConnString);
             _tableClient = _storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            _table = _tableClient.GetTableReference(_settings.Table_Name);
+            _table = _tableClient.GetTableReference(EnvOptions.Table_Name);
         }
         public Task<List<ImageInfoEntity>> GetImagesInfo()
         {
