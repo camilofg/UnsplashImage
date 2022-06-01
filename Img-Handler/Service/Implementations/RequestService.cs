@@ -5,31 +5,32 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Img_Handler.Service.Contracts;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Retry;
 
-namespace Img_Handler.Service
+namespace Img_Handler.Service.Implementations
 {
-    public class RequestService
+    public class RequestService : IRequestService
     {
-        ILogger _logger;
-        private readonly HttpClient client;
+        private readonly ILogger _logger;
+        private readonly HttpClient _client;
         private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
-        private static string apikey = System.Environment.GetEnvironmentVariable("apiKey");
-        private static string storageConnString = System.Environment.GetEnvironmentVariable("storageConnectionString");
+        private static string ApiKey = Environment.GetEnvironmentVariable("ApiKey");
+        private static string storageConnString = Environment.GetEnvironmentVariable("StorageConnectionString");
 
-        public RequestService(ILogger logger)
+        public RequestService(ILoggerFactory logger, IHttpClientFactory httpClientFactory)
         {
-            _logger = logger;
-            client = new HttpClient();
+            _logger = logger.CreateLogger<RequestService>();
+            _client = httpClientFactory.CreateClient();
             HttpStatusCode[] httpStatusCodesWorthRetrying = {
-               HttpStatusCode.RequestTimeout, 
-               HttpStatusCode.InternalServerError, 
+               HttpStatusCode.RequestTimeout,
+               HttpStatusCode.InternalServerError,
                HttpStatusCode.BadGateway,
-               HttpStatusCode.ServiceUnavailable, 
-               HttpStatusCode.GatewayTimeout 
+               HttpStatusCode.ServiceUnavailable,
+               HttpStatusCode.GatewayTimeout
             };
             _retryPolicy = Policy
                 .Handle<HttpRequestException>()
@@ -54,7 +55,7 @@ namespace Img_Handler.Service
             {
                 HttpResponseMessage response;
                 response = await _retryPolicy.ExecuteAsync(async () =>
-                         await SendMessage(url, apikey)
+                         await SendMessage(url, ApiKey)
                     );
                 var responseString = await response.Content.ReadAsStringAsync();
                 bool successful = response.IsSuccessStatusCode;
@@ -79,9 +80,10 @@ namespace Img_Handler.Service
             }
         }
 
-        private async Task<HttpResponseMessage> SendMessage(string url, string apiKey) {
-            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Client-ID {apikey}");
-            var response = await client.GetAsync($"{url}", HttpCompletionOption.ResponseHeadersRead);
+        private async Task<HttpResponseMessage> SendMessage(string url, string ApiKey)
+        {
+            _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Client-ID {ApiKey}");
+            var response = await _client.GetAsync($"{url}", HttpCompletionOption.ResponseHeadersRead);
             return response;
         }
     }

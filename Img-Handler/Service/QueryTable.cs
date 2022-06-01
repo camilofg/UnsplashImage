@@ -10,8 +10,8 @@ namespace Img_Handler.Service
 {
     public class QueryTable
     {
-        private static string storageConnString = System.Environment.GetEnvironmentVariable("storageConnectionString");
-        private static string tableName = System.Environment.GetEnvironmentVariable("table_name");
+        private static string storageConnString = System.Environment.GetEnvironmentVariable("StorageConnectionString");
+        private static string tableName = System.Environment.GetEnvironmentVariable("Table_Name");
 
         public static List<ImageInfoEntity> QueryImageInfo() {
 

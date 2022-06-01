@@ -39,23 +39,23 @@ namespace Img_Handler_Test
             }
         }
 
-        [TestMethod]
-        public async Task ShouldReturnString()
-        {
-            var logger = Mock.Of<ILogger>();
-            var sut = new RequestService(logger);
-            var result = await sut.CallApiAsync($"https://api.unsplash.com/photos/random");
+        //[TestMethod]
+        //public async Task ShouldReturnString()
+        //{
+        //    var logger = Mock.Of<ILogger>();
+        //    var sut = new RequestService(logger);
+        //    var result = await sut.CallApiAsync($"https://api.unsplash.com/photos/random");
 
-            Assert.IsInstanceOfType(result, typeof(string));
-        }
+        //    Assert.IsInstanceOfType(result, typeof(string));
+        //}
 
-        [TestMethod]
-        public async Task ShouldThrowArgumentNullException()
-        {
-            var logger = Mock.Of<ILogger>();
-            var sut = new RequestService(logger);
+        //[TestMethod]
+        //public async Task ShouldThrowArgumentNullException()
+        //{
+        //    var logger = Mock.Of<ILogger>();
+        //    var sut = new RequestService(logger);
 
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await sut.CallApiAsync(string.Empty));
-        }
+        //    await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await sut.CallApiAsync(string.Empty));
+        //}
     }
 }
