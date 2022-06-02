@@ -1,77 +1,59 @@
 using Img_Handler;
+using Img_Handler.Functions;
 using Img_Handler.Models;
+using Img_Handler.Service.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace Img_Handler_Test
 {
     [TestClass]
     public class ImageInfoHandlerTest
     {
-        [TestInitialize()]
-        public void Initialize()
+        [TestMethod]
+        public async Task Test1_ShouldThrowsNullReferenceException()
         {
-            string basePath = Path.GetFullPath(@"..\..\..\..\Img-Handler");
-            var settings = JsonConvert.DeserializeObject<LocalSettings>(
-                File.ReadAllText(basePath + "\\local.settings.json"));
+            //Arrange
+            var requestServiceMock = new Mock<IRequestService>();
+            var tableStorageMock = new Mock<ITableStorageHandler>();
+            var request = new HttpRequestMessage();
+            var logger = Mock.Of<ILogger>();
 
-            foreach (var setting in settings.Values)
-            {
-                Environment.SetEnvironmentVariable(setting.Key, setting.Value);
-            }
+            //Act && Assert
+
+            var sut = new ImageInfoHandler(requestServiceMock.Object, tableStorageMock.Object);
+            await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await sut.Run(request, logger));
         }
 
-        [TestCleanup()]
-        public void Cleanup()
+        [TestMethod]
+        public async Task Test2_ShouldReturnImagePropertyType()
         {
-            string basePath = Path.GetFullPath(@"..\..\..\..\Img-Handler");
-            var settings = JsonConvert.DeserializeObject<LocalSettings>(
-                File.ReadAllText(basePath + "\\local.settings.json"));
+            //Arrange
+            var requestServiceMock = new Mock<IRequestService>();
 
-            foreach (var setting in settings.Values)
-            {
-                Environment.SetEnvironmentVariable(setting.Key, null);
-            }
+            string textResponse = System.IO.File.ReadAllText(Path.GetFullPath(@"..\..\..\unsplash_response.json"));
+            requestServiceMock.Setup(r => r.CallApiAsync(It.Is<string>(s=> s.Contains("random")))).ReturnsAsync((string)textResponse);
+
+            string statisticsResponse = System.IO.File.ReadAllText(Path.GetFullPath(@"..\..\..\unsplash_statistics_response.json"));
+            requestServiceMock.Setup(r => r.CallApiAsync(It.Is<string>(s => s.Contains("statistics")))).ReturnsAsync((string)statisticsResponse);
+
+            var tableStorageMock = new Mock<ITableStorageHandler>();
+            tableStorageMock.Setup(t => t.UpsertImageAsync(It.IsAny<ImageInfoEntity>())).Returns(Task.CompletedTask);
+            var request = new HttpRequestMessage();
+            var logger = Mock.Of<ILogger>();
+
+            //Act
+            var sut = new ImageInfoHandler(requestServiceMock.Object, tableStorageMock.Object);
+            var response = await sut.Run(request, logger);
+            var okResult = response as OkObjectResult;
+            var result = JsonConvert.DeserializeObject<ImageProperties>(okResult?.Value.ToString());
+
+            //Assert
+            Assert.IsInstanceOfType(result, typeof(ImageProperties));
         }
-
-        //[TestMethod]
-        //public async Task Test1_ShouldThrowsNullReferenceException()
-        //{
-        //    //Arrange
-        //    Environment.SetEnvironmentVariable("ApiKey", String.Empty);
-        //    var request = new HttpRequestMessage();
-        //    var logger = Mock.Of<ILogger>();
-
-        //    //Act && Assert
-        //    var sut = new ImageInfoHandler(null, new RequestService());
-        //    await Assert.ThrowsExceptionAsync<NullReferenceException>(async () => await sut.Run(request, logger));
-        //}
-
-        //[TestMethod]
-        //public async Task Test2_ShouldReturnImagePropertyType()
-        //{
-        //    //Arrange
-        //    var request = new HttpRequestMessage();
-        //    var logger = Mock.Of<ILogger>();
-
-        //    //Act
-        //    var response = await ImageInfoHandler.Run(request, logger);
-        //    var okResult = response as OkObjectResult;
-        //    var result = JsonConvert.DeserializeObject<ImageProperties>(okResult?.Value.ToString());
-
-        //    //Assert
-        //    Assert.IsInstanceOfType(result, typeof(ImageProperties));
-        //}
     }
-
-    class LocalSettings
-    {
-        public bool IsEncrypted { get; set; }
-        public Dictionary<string, string> Values { get; set; }
-    }
-
-    
 }

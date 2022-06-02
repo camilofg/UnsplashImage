@@ -1,7 +1,9 @@
 ﻿using Img_Handler.Service;
+using Img_Handler.Service.Implementations;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using Polly.Retry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,49 +15,42 @@ namespace Img_Handler_Test
     [TestClass]
     public class RequestServiceTest
     {
-        [TestInitialize()]
-        public void Initialize()
-        {
-            string basePath = Path.GetFullPath(@"..\..\..\..\Img-Handler");
-            var settings = JsonConvert.DeserializeObject<LocalSettings>(
-                File.ReadAllText(basePath + "\\local.settings.json"));
 
-            foreach (var setting in settings.Values)
-            {
-                Environment.SetEnvironmentVariable(setting.Key, setting.Value);
-            }
+        [TestMethod]
+        public async Task ShouldReturnString()
+        {
+            //Arrange
+            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            
+            //var retryPolicyMock = new Mock<AsyncRetryPolicy<HttpResponseMessage>>();
+            //retryPolicyMock.Setup(r => r.ExecuteAsync(It.IsAny<Func<Task<HttpResponseMessage>>>()))
+            //    .ReturnsAsync(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
+            //httpClientFactoryMock.Setup(s => s.CreateClient()).Returns(new HttpClient());
+            var logger = new Mock<ILoggerFactory>();
+
+            var _clientMock = new Mock<HttpClient>();
+            _clientMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<HttpCompletionOption>())).ReturnsAsync(new HttpResponseMessage());
+
+            //Act
+            var sut = new RequestService(logger.Object, httpClientFactoryMock.Object);
+            var result = await sut.CallApiAsync($"https://api.unsplash.com/photos/random");
+
+            //Assert
+            Assert.IsInstanceOfType(result, typeof(string));
         }
 
-        [TestCleanup()]
-        public void Cleanup()
+        [TestMethod]
+        public async Task ShouldThrowArgumentNullException()
         {
-            string basePath = Path.GetFullPath(@"..\..\..\..\Img-Handler");
-            var settings = JsonConvert.DeserializeObject<LocalSettings>(
-                File.ReadAllText(basePath + "\\local.settings.json"));
+            //Arrange
+            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            var logger = new Mock<ILoggerFactory>();
 
-            foreach (var setting in settings.Values)
-            {
-                Environment.SetEnvironmentVariable(setting.Key, null);
-            }
+            //Act
+            var sut = new RequestService(logger.Object, httpClientFactoryMock.Object);
+
+            //Assert
+            await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await sut.CallApiAsync(string.Empty));
         }
-
-        //[TestMethod]
-        //public async Task ShouldReturnString()
-        //{
-        //    var logger = Mock.Of<ILogger>();
-        //    var sut = new RequestService(logger);
-        //    var result = await sut.CallApiAsync($"https://api.unsplash.com/photos/random");
-
-        //    Assert.IsInstanceOfType(result, typeof(string));
-        //}
-
-        //[TestMethod]
-        //public async Task ShouldThrowArgumentNullException()
-        //{
-        //    var logger = Mock.Of<ILogger>();
-        //    var sut = new RequestService(logger);
-
-        //    await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await sut.CallApiAsync(string.Empty));
-        //}
     }
 }
