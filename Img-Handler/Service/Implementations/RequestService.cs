@@ -55,13 +55,13 @@ namespace Img_Handler.Service.Implementations
             {
                 HttpResponseMessage response;
                 response = await _retryPolicy.ExecuteAsync(async () =>
-                         await SendMessage(url, ApiKey)
+                         await SendMessage(url)
                     );
                 var responseString = await response.Content.ReadAsStringAsync();
                 bool successful = response.IsSuccessStatusCode;
                 if (successful)
                 {
-                    _logger.LogInformation(responseString);
+                    _logger.LogInformation("The operation concluded correctly");
                 }
                 else
                 {
@@ -80,7 +80,7 @@ namespace Img_Handler.Service.Implementations
             }
         }
 
-        private async Task<HttpResponseMessage> SendMessage(string url, string ApiKey)
+        private async Task<HttpResponseMessage> SendMessage(string url)
         {
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Client-ID {ApiKey}");
             var response = await _client.GetAsync($"{url}", HttpCompletionOption.ResponseHeadersRead);

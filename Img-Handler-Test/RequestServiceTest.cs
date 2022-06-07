@@ -1,12 +1,14 @@
 ﻿using Img_Handler.Service;
 using Img_Handler.Service.Implementations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Newtonsoft.Json;
 using Polly.Retry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,19 +22,14 @@ namespace Img_Handler_Test
         public async Task ShouldReturnString()
         {
             //Arrange
-            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            var mockFactory = new Mock<IHttpClientFactory>();
+            var handlerStub = new DelegatingHandlerStub();
+            var _client = new HttpClient(handlerStub);
+            var test = new NullLoggerFactory();
+            mockFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(_client);
             
-            //var retryPolicyMock = new Mock<AsyncRetryPolicy<HttpResponseMessage>>();
-            //retryPolicyMock.Setup(r => r.ExecuteAsync(It.IsAny<Func<Task<HttpResponseMessage>>>()))
-            //    .ReturnsAsync(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
-            //httpClientFactoryMock.Setup(s => s.CreateClient()).Returns(new HttpClient());
-            var logger = new Mock<ILoggerFactory>();
-
-            var _clientMock = new Mock<HttpClient>();
-            _clientMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<HttpCompletionOption>())).ReturnsAsync(new HttpResponseMessage());
-
             //Act
-            var sut = new RequestService(logger.Object, httpClientFactoryMock.Object);
+            var sut = new RequestService(test, mockFactory.Object);
             var result = await sut.CallApiAsync($"https://api.unsplash.com/photos/random");
 
             //Assert
