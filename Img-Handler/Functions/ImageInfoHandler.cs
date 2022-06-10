@@ -43,11 +43,11 @@ namespace Img_Handler.Functions
             imgProps = JsonConvert.DeserializeObject<ImageProperties>(result);
 
             //Statistics request
-            var result2 = await _requestService.CallApiAsync($"{EnvOptions.UrlBase}{imgProps.Id}/statistics?quantity={EnvOptions.Num_Days}");
+            var stats = await _requestService.CallApiAsync($"{EnvOptions.UrlBase}{imgProps.Id}/statistics?quantity={EnvOptions.Num_Days}");
             var definition = new { downloads = new { total = 0, historical = new { change = 0 } } };
-            var test2 = JsonConvert.DeserializeAnonymousType(result2, definition);
-            imgProps.Stats.QuantityDownloads = test2.downloads.total;
-            imgProps.Stats.PercentageDownloads = (double)test2.downloads.historical.change / test2.downloads.total * 100;
+            var desirializedStats = JsonConvert.DeserializeAnonymousType(stats, definition);
+            imgProps.Stats.QuantityDownloads = desirializedStats.downloads.total;
+            imgProps.Stats.PercentageDownloads = (double)desirializedStats.downloads.historical.change / desirializedStats.downloads.total * 100;
             responseMessage = JsonConvert.SerializeObject(imgProps);
 
             var newImageInfo = new ImageInfoEntity(imgProps.Id, imgProps.User.Id)

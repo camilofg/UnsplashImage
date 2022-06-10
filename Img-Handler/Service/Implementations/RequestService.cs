@@ -58,8 +58,7 @@ namespace Img_Handler.Service.Implementations
                          await SendMessage(url)
                     );
                 var responseString = await response.Content.ReadAsStringAsync();
-                bool successful = response.IsSuccessStatusCode;
-                if (successful)
+                if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("The operation concluded correctly");
                 }
